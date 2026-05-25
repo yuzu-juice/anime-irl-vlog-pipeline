@@ -1,0 +1,10 @@
+#!/bin/sh
+set -e
+
+echo "Running cargo fmt..."
+cargo fmt --all
+
+echo "Running cargo clippy..."
+cargo clippy --all-targets -- -D warnings
+
+echo "OK"
