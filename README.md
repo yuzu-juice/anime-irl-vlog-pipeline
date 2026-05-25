@@ -1,4 +1,4 @@
-# anime-irl-vlog-pipeline
+# irl-pipeline
 
 Full-Rust architecture design repository for an OSS "anime IRL vlog" pipeline.
 
