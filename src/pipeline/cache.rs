@@ -8,10 +8,7 @@ pub fn needs_run(stage: &dyn Stage) -> bool {
     if output_files.is_empty() {
         return true;
     }
-    if output_files
-        .iter()
-        .any(|path| !Path::new(path).exists())
-    {
+    if output_files.iter().any(|path| !Path::new(path).exists()) {
         return true;
     }
     let oldest_output = output_files
@@ -32,10 +29,10 @@ pub fn needs_run(stage: &dyn Stage) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::pipeline::stage::StageKind;
     use std::fs;
     use std::thread;
     use std::time::Duration;
-    use crate::pipeline::stage::StageKind;
 
     struct MockStage {
         kind: StageKind,

@@ -1,7 +1,7 @@
 mod pipeline;
 
-use pipeline::stages::{analysis, composite, ingest, motion, render, review};
 use pipeline::Pipeline;
+use pipeline::stages::{analysis, composite, ingest, motion, render, review};
 
 fn main() -> anyhow::Result<()> {
     Pipeline::new()
