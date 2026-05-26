@@ -78,19 +78,19 @@ mod tests {
 
         let pipeline = Pipeline::from_stages(vec![
             Box::new(MockStage {
-                kind: stage::StageKind::Ingest,
+                kind: StageKind::Ingest,
                 requires: vec![],
                 produces: vec![],
                 calls: calls.clone(),
             }),
             Box::new(MockStage {
-                kind: stage::StageKind::Analysis,
+                kind: StageKind::Analysis,
                 requires: vec![],
                 produces: vec![],
                 calls: calls.clone(),
             }),
             Box::new(MockStage {
-                kind: stage::StageKind::Motion,
+                kind: StageKind::Motion,
                 requires: vec![],
                 produces: vec![],
                 calls: calls.clone(),
@@ -121,7 +121,7 @@ mod tests {
         let calls = Rc::new(RefCell::new(vec![]));
 
         let pipeline = Pipeline::from_stages(vec![Box::new(MockStage {
-            kind: stage::StageKind::Ingest,
+            kind: StageKind::Ingest,
             requires: vec![inp],
             produces: vec![out],
             calls: calls.clone(),
