@@ -1,12 +1,12 @@
 mod pipeline;
 
+use pipeline::Pipeline;
 use pipeline::context::Context;
 use pipeline::stages::{analysis, composite, ingest, motion, render, review};
-use pipeline::Pipeline;
 
 fn main() -> anyhow::Result<()> {
     let ctx = Context {
-        project_root: "test-project".to_string(),
+        project_root: ".".to_string(),
     };
     Pipeline::new()
         .then(ingest::Ingest)
