@@ -1,4 +1,3 @@
-use crate::pipeline::context::Context;
 use crate::pipeline::stage::{Stage, StageKind};
 
 pub struct Ingest;
@@ -16,7 +15,7 @@ impl Stage for Ingest {
         vec!["frames".into()]
     }
 
-    fn run(&self, _ctx: &Context) -> anyhow::Result<()> {
+    fn run(&self) -> anyhow::Result<()> {
         println!("  extracting frames from input video...");
         Ok(())
     }

@@ -1,4 +1,3 @@
-use crate::pipeline::context::Context;
 use crate::pipeline::stage::{Stage, StageKind};
 
 pub struct Review;
@@ -16,7 +15,7 @@ impl Stage for Review {
         vec!["final".into()]
     }
 
-    fn run(&self, _ctx: &Context) -> anyhow::Result<()> {
+    fn run(&self) -> anyhow::Result<()> {
         println!("  human-in-the-loop review (skipped in automation)");
         Ok(())
     }

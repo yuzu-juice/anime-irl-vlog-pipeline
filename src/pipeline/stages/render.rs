@@ -1,4 +1,3 @@
-use crate::pipeline::context::Context;
 use crate::pipeline::stage::{Stage, StageKind};
 
 pub struct Render;
@@ -16,7 +15,7 @@ impl Stage for Render {
         vec!["render".into()]
     }
 
-    fn run(&self, _ctx: &Context) -> anyhow::Result<()> {
+    fn run(&self) -> anyhow::Result<()> {
         println!("  generating anime cel frames...");
         Ok(())
     }

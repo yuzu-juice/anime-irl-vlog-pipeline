@@ -1,4 +1,3 @@
-use crate::pipeline::context::Context;
 use crate::pipeline::stage::{Stage, StageKind};
 
 pub struct Composite;
@@ -16,7 +15,7 @@ impl Stage for Composite {
         vec!["comp".into()]
     }
 
-    fn run(&self, _ctx: &Context) -> anyhow::Result<()> {
+    fn run(&self) -> anyhow::Result<()> {
         println!("  compositing layers and exporting...");
         Ok(())
     }

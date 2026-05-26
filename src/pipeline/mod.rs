@@ -1,9 +1,7 @@
 pub mod cache;
-pub mod context;
 pub mod stage;
 pub mod stages;
 
-use context::Context;
 use stage::Stage;
 
 pub struct Pipeline {
@@ -25,11 +23,11 @@ impl Pipeline {
         Self { stages }
     }
 
-    pub fn run(&self, ctx: &Context) -> anyhow::Result<()> {
+    pub fn run(&self) -> anyhow::Result<()> {
         for stage in &self.stages {
-            if cache::needs_run(stage.as_ref(), ctx) {
+            if cache::needs_run(stage.as_ref()) {
                 println!("[run]  {:?}", stage.kind());
-                stage.run(ctx)?;
+                stage.run()?;
             } else {
                 println!("[skip] {:?}", stage.kind());
             }
@@ -41,12 +39,12 @@ impl Pipeline {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use stage::StageKind;
     use std::cell::RefCell;
     use std::fs;
     use std::rc::Rc;
     use std::thread;
     use std::time::Duration;
-    use stage::StageKind;
 
     struct MockStage {
         kind: StageKind,
@@ -68,7 +66,7 @@ mod tests {
             self.produces.clone()
         }
 
-        fn run(&self, _ctx: &Context) -> anyhow::Result<()> {
+        fn run(&self) -> anyhow::Result<()> {
             self.calls.borrow_mut().push(self.kind);
             Ok(())
         }
@@ -80,30 +78,26 @@ mod tests {
 
         let pipeline = Pipeline::from_stages(vec![
             Box::new(MockStage {
-                        kind: stage::StageKind::Ingest,
-                        requires: vec![],
-                        produces: vec![],
-                        calls: calls.clone(),
-                    }),
-                    Box::new(MockStage {
-                        kind: stage::StageKind::Analysis,
-                        requires: vec![],
-                        produces: vec![],
-                        calls: calls.clone(),
-                    }),
-                    Box::new(MockStage {
-                        kind: stage::StageKind::Motion,
-                        requires: vec![],
-                        produces: vec![],
-                        calls: calls.clone(),
-                    }),
+                kind: stage::StageKind::Ingest,
+                requires: vec![],
+                produces: vec![],
+                calls: calls.clone(),
+            }),
+            Box::new(MockStage {
+                kind: stage::StageKind::Analysis,
+                requires: vec![],
+                produces: vec![],
+                calls: calls.clone(),
+            }),
+            Box::new(MockStage {
+                kind: stage::StageKind::Motion,
+                requires: vec![],
+                produces: vec![],
+                calls: calls.clone(),
+            }),
         ]);
 
-        let ctx = Context {
-            project_root: "test-pipeline".to_string(),
-        };
-
-        pipeline.run(&ctx).unwrap();
+        pipeline.run().unwrap();
 
         assert_eq!(
             *calls.borrow(),
@@ -128,16 +122,12 @@ mod tests {
 
         let pipeline = Pipeline::from_stages(vec![Box::new(MockStage {
             kind: stage::StageKind::Ingest,
-            requires: vec!["input".into()],
-            produces: vec!["output".into()],
+            requires: vec![inp],
+            produces: vec![out],
             calls: calls.clone(),
         })]);
 
-        let ctx = Context {
-            project_root: dir.to_string(),
-        };
-
-        pipeline.run(&ctx).unwrap();
+        pipeline.run().unwrap();
 
         assert!(calls.borrow().is_empty());
 

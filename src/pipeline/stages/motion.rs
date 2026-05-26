@@ -1,4 +1,3 @@
-use crate::pipeline::context::Context;
 use crate::pipeline::stage::{Stage, StageKind};
 
 pub struct Motion;
@@ -16,7 +15,7 @@ impl Stage for Motion {
         vec!["pose_clean".into()]
     }
 
-    fn run(&self, _ctx: &Context) -> anyhow::Result<()> {
+    fn run(&self) -> anyhow::Result<()> {
         println!("  smoothing, foot locking, hold insertion...");
         Ok(())
     }

@@ -1,4 +1,3 @@
-use crate::pipeline::context::Context;
 use crate::pipeline::stage::{Stage, StageKind};
 
 pub struct Analysis;
@@ -21,7 +20,7 @@ impl Stage for Analysis {
         ]
     }
 
-    fn run(&self, _ctx: &Context) -> anyhow::Result<()> {
+    fn run(&self) -> anyhow::Result<()> {
         println!("  running segmentation, pose, depth extraction...");
         Ok(())
     }

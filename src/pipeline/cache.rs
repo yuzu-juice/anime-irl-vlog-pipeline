@@ -1,15 +1,10 @@
 use std::fs;
 use std::path::Path;
 
-use crate::pipeline::context::Context;
 use crate::pipeline::stage::Stage;
 
-pub fn needs_run(stage: &dyn Stage, ctx: &Context) -> bool {
-    let output_files: Vec<String> = stage
-        .produces()
-        .iter()
-        .map(|p| format!("{}/{}", ctx.project_root, p))
-        .collect();
+pub fn needs_run(stage: &dyn Stage) -> bool {
+    let output_files: Vec<String> = stage.produces();
     if output_files.is_empty() {
         return true;
     }
@@ -23,11 +18,7 @@ pub fn needs_run(stage: &dyn Stage, ctx: &Context) -> bool {
         .iter()
         .filter_map(|path| fs::metadata(path).ok().and_then(|m| m.modified().ok()))
         .min();
-    let input_files: Vec<String> = stage
-        .requires()
-        .iter()
-        .map(|p| format!("{}/{}", ctx.project_root, p))
-        .collect();
+    let input_files: Vec<String> = stage.requires();
     let newest_input = input_files
         .iter()
         .filter_map(|path| fs::metadata(path).ok().and_then(|m| m.modified().ok()))
@@ -62,14 +53,8 @@ mod tests {
         fn produces(&self) -> Vec<String> {
             self.produces.clone()
         }
-        fn run(&self, _ctx: &Context) -> anyhow::Result<()> {
+        fn run(&self) -> anyhow::Result<()> {
             Ok(())
-        }
-    }
-
-    fn ctx(dir: &str) -> Context {
-        Context {
-            project_root: dir.to_string(),
         }
     }
 
@@ -80,7 +65,7 @@ mod tests {
             requires: vec![],
             produces: vec![],
         };
-        assert!(needs_run(&stage, &ctx("test-cache-empty")));
+        assert!(needs_run(&stage));
     }
 
     #[test]
@@ -88,9 +73,9 @@ mod tests {
         let stage = MockStage {
             kind: StageKind::Ingest,
             requires: vec![],
-            produces: vec!["nope".into()],
+            produces: vec!["test-cache-missing/nope".into()],
         };
-        assert!(needs_run(&stage, &ctx("test-cache-missing")));
+        assert!(needs_run(&stage));
     }
 
     #[test]
@@ -104,10 +89,10 @@ mod tests {
 
         let stage = MockStage {
             kind: StageKind::Ingest,
-            requires: vec!["input".into()],
-            produces: vec!["output".into()],
+            requires: vec![format!("{}/input", dir)],
+            produces: vec![format!("{}/output", dir)],
         };
-        assert!(!needs_run(&stage, &ctx(dir)));
+        assert!(!needs_run(&stage));
 
         let _ = fs::remove_dir_all(dir);
     }
@@ -123,10 +108,10 @@ mod tests {
 
         let stage = MockStage {
             kind: StageKind::Ingest,
-            requires: vec!["input".into()],
-            produces: vec!["output".into()],
+            requires: vec![format!("{}/input", dir)],
+            produces: vec![format!("{}/output", dir)],
         };
-        assert!(needs_run(&stage, &ctx(dir)));
+        assert!(needs_run(&stage));
 
         let _ = fs::remove_dir_all(dir);
     }
