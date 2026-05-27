@@ -7,16 +7,7 @@ impl Stage for Composite {
         StageKind::Composite
     }
 
-    fn requires(&self) -> Vec<String> {
-        vec!["plate".into(), "render".into(), "masks".into()]
-    }
-
-    fn produces(&self) -> Vec<String> {
-        vec!["comp".into()]
-    }
-
-    fn run(&self) -> anyhow::Result<()> {
-        println!("  compositing layers and exporting...");
-        Ok(())
+    fn run(&self) {
+        println!("compositing layers and exporting...");
     }
 }

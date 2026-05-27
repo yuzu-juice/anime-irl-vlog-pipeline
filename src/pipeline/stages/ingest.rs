@@ -7,16 +7,7 @@ impl Stage for Ingest {
         StageKind::Ingest
     }
 
-    fn requires(&self) -> Vec<String> {
-        vec!["input.mp4".into()]
-    }
-
-    fn produces(&self) -> Vec<String> {
-        vec!["frames".into()]
-    }
-
-    fn run(&self) -> anyhow::Result<()> {
-        println!("  extracting frames from input video...");
-        Ok(())
+    fn run(&self) {
+        println!("extracting frames from input video...");
     }
 }

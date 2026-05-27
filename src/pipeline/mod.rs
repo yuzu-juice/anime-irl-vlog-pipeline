@@ -1,4 +1,3 @@
-pub mod cache;
 pub mod stage;
 pub mod stages;
 
@@ -23,17 +22,11 @@ impl Pipeline {
         Self { stages }
     }
 
-    pub fn run(&self) -> anyhow::Result<()> {
+    pub fn run(&self) {
         for stage in &self.stages {
-            if cache::needs_run(stage.as_ref()) {
-                println!("[run]  {:?}", stage.kind());
-                stage.run()?;
-                cache::save_manifest(stage.as_ref())?;
-            } else {
-                println!("[skip] {:?}", stage.kind());
-            }
+            println!("[run]  {:?}", stage.kind());
+            stage.run();
         }
-        Ok(())
     }
 }
 
@@ -42,13 +35,10 @@ mod tests {
     use super::*;
     use stage::StageKind;
     use std::cell::RefCell;
-    use std::fs;
     use std::rc::Rc;
 
     struct MockStage {
         kind: StageKind,
-        requires: Vec<String>,
-        produces: Vec<String>,
         calls: Rc<RefCell<Vec<StageKind>>>,
     }
 
@@ -57,17 +47,8 @@ mod tests {
             self.kind
         }
 
-        fn requires(&self) -> Vec<String> {
-            self.requires.clone()
-        }
-
-        fn produces(&self) -> Vec<String> {
-            self.produces.clone()
-        }
-
-        fn run(&self) -> anyhow::Result<()> {
+        fn run(&self) {
             self.calls.borrow_mut().push(self.kind);
-            Ok(())
         }
     }
 
@@ -78,68 +59,23 @@ mod tests {
         let pipeline = Pipeline::from_stages(vec![
             Box::new(MockStage {
                 kind: StageKind::Ingest,
-                requires: vec![],
-                produces: vec![],
                 calls: calls.clone(),
             }),
             Box::new(MockStage {
                 kind: StageKind::Analysis,
-                requires: vec![],
-                produces: vec![],
                 calls: calls.clone(),
             }),
             Box::new(MockStage {
                 kind: StageKind::Motion,
-                requires: vec![],
-                produces: vec![],
                 calls: calls.clone(),
             }),
         ]);
 
-        pipeline.run().unwrap();
+        pipeline.run();
 
         assert_eq!(
             *calls.borrow(),
             vec![StageKind::Ingest, StageKind::Analysis, StageKind::Motion]
         );
-    }
-
-    #[test]
-    fn stage_is_skipped_when_outputs_are_fresh() {
-        let dir = "test-pipeline-skip";
-        let _ = fs::remove_dir_all(dir);
-        let _ = fs::remove_dir_all(".cache"); // clean up previous test runs
-        fs::create_dir_all(dir).unwrap();
-
-        let inp = format!("{}/input", dir);
-        let out = format!("{}/output", dir);
-
-        fs::write(&inp, "x").unwrap();
-        fs::write(&out, "x").unwrap();
-
-        // persist a manifest so needs_run returns false
-        let manifest_stage = MockStage {
-            kind: StageKind::Render,
-            requires: vec![inp.clone()],
-            produces: vec![out.clone()],
-            calls: Rc::new(RefCell::new(vec![])),
-        };
-        crate::pipeline::cache::save_manifest(&manifest_stage).unwrap();
-
-        let calls = Rc::new(RefCell::new(vec![]));
-
-        let pipeline = Pipeline::from_stages(vec![Box::new(MockStage {
-            kind: StageKind::Render,
-            requires: vec![inp],
-            produces: vec![out],
-            calls: calls.clone(),
-        })]);
-
-        pipeline.run().unwrap();
-
-        assert!(calls.borrow().is_empty());
-
-        let _ = fs::remove_dir_all(".cache");
-        let _ = fs::remove_dir_all(dir);
     }
 }

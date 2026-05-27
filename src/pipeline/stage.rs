@@ -10,7 +10,5 @@ pub enum StageKind {
 
 pub trait Stage {
     fn kind(&self) -> StageKind;
-    fn requires(&self) -> Vec<String>;
-    fn produces(&self) -> Vec<String>;
-    fn run(&self) -> anyhow::Result<()>;
+    fn run(&self);
 }

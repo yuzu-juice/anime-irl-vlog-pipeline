@@ -7,16 +7,7 @@ impl Stage for Render {
         StageKind::Render
     }
 
-    fn requires(&self) -> Vec<String> {
-        vec!["pose_clean".into(), "depth".into()]
-    }
-
-    fn produces(&self) -> Vec<String> {
-        vec!["render".into()]
-    }
-
-    fn run(&self) -> anyhow::Result<()> {
-        println!("  generating anime cel frames...");
-        Ok(())
+    fn run(&self) {
+        println!("generating anime cel frames...");
     }
 }
