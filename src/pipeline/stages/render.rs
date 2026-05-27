@@ -8,6 +8,6 @@ impl Stage for Render {
     }
 
     fn run(&self) {
-        println!("  generating anime cel frames...");
+        println!("generating anime cel frames...");
     }
 }

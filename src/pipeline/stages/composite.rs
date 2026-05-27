@@ -8,6 +8,6 @@ impl Stage for Composite {
     }
 
     fn run(&self) {
-        println!("  compositing layers and exporting...");
+        println!("compositing layers and exporting...");
     }
 }

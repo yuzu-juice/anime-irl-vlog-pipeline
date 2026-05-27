@@ -8,6 +8,6 @@ impl Stage for Motion {
     }
 
     fn run(&self) {
-        println!("  smoothing, foot locking, hold insertion...");
+        println!("smoothing, foot locking, hold insertion...");
     }
 }

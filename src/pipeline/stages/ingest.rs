@@ -8,6 +8,6 @@ impl Stage for Ingest {
     }
 
     fn run(&self) {
-        println!("  extracting frames from input video...");
+        println!("extracting frames from input video...");
     }
 }

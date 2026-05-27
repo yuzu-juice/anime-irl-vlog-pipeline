@@ -8,6 +8,6 @@ impl Stage for Analysis {
     }
 
     fn run(&self) {
-        println!("  running segmentation, pose, depth extraction...");
+        println!("running segmentation, pose, depth extraction...");
     }
 }

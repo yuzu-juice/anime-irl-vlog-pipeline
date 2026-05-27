@@ -8,6 +8,6 @@ impl Stage for Review {
     }
 
     fn run(&self) {
-        println!("  human-in-the-loop review (skipped in automation)");
+        println!("human-in-the-loop review (skipped in automation)");
     }
 }
