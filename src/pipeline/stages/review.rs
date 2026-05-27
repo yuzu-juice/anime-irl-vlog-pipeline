@@ -7,17 +7,7 @@ impl Stage for Review {
         StageKind::Review
     }
 
-    fn requires(&self) -> Vec<String> {
-        vec!["comp".into()]
-    }
-
-    fn produces(&self) -> Vec<String> {
-        vec!["final".into()]
-    }
-
-    fn run(&self) -> anyhow::Result<()> {
+    fn run(&self) {
         println!("  human-in-the-loop review (skipped in automation)");
-        super::create_output_dirs(&self.produces())?;
-        Ok(())
     }
 }

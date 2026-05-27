@@ -7,22 +7,7 @@ impl Stage for Analysis {
         StageKind::Analysis
     }
 
-    fn requires(&self) -> Vec<String> {
-        vec!["frames".into()]
-    }
-
-    fn produces(&self) -> Vec<String> {
-        vec![
-            "masks".into(),
-            "depth".into(),
-            "pose_raw".into(),
-            "plate".into(),
-        ]
-    }
-
-    fn run(&self) -> anyhow::Result<()> {
+    fn run(&self) {
         println!("  running segmentation, pose, depth extraction...");
-        super::create_output_dirs(&self.produces())?;
-        Ok(())
     }
 }
