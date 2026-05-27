@@ -151,10 +151,10 @@ pub fn save_manifest(stage: &dyn Stage) -> anyhow::Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::pipeline::stage::StageKind;
     use std::fs;
     use std::thread;
     use std::time::Duration;
-    use crate::pipeline::stage::StageKind;
 
     struct MockStage {
         kind: StageKind,
