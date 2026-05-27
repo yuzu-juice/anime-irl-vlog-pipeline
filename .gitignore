@@ -1,1 +1,17 @@
 /target
+/.cache
+
+/frames
+/masks
+/depth
+/pose_raw
+/pose_clean
+/plate
+/render
+/comp
+/final
+/input.mp4
+
+/test-cache-*
+/test-pipeline*
+/test-project*
