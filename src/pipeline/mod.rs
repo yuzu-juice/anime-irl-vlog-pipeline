@@ -1,8 +1,8 @@
-pub mod cache;
 pub mod stage;
 pub mod stages;
 
 use stage::Stage;
+use std::path::Path;
 
 pub struct Pipeline {
     stages: Vec<Box<dyn Stage>>,
@@ -25,15 +25,37 @@ impl Pipeline {
 
     pub fn run(&self) -> anyhow::Result<()> {
         for stage in &self.stages {
-            if cache::needs_run(stage.as_ref()) {
-                println!("[run]  {:?}", stage.kind());
-                stage.run()?;
-                cache::save_manifest(stage.as_ref())?;
-            } else {
-                println!("[skip] {:?}", stage.kind());
-            }
+            validate_required_inputs(stage.as_ref())?;
+            println!("[run]  {:?}", stage.kind());
+            stage.run()?;
+            validate_produced_outputs(stage.as_ref())?;
         }
         Ok(())
+    }
+}
+
+fn validate_required_inputs(stage: &dyn Stage) -> anyhow::Result<()> {
+    validate_existing_paths(stage.kind(), "missing inputs", stage.requires())
+}
+
+fn validate_produced_outputs(stage: &dyn Stage) -> anyhow::Result<()> {
+    validate_existing_paths(stage.kind(), "missing outputs", stage.produces())
+}
+
+fn validate_existing_paths(
+    kind: stage::StageKind,
+    message: &str,
+    paths: Vec<String>,
+) -> anyhow::Result<()> {
+    let missing: Vec<String> = paths
+        .into_iter()
+        .filter(|path| !Path::new(path).exists())
+        .collect();
+
+    if missing.is_empty() {
+        Ok(())
+    } else {
+        anyhow::bail!("{} for {:?}: {}", message, kind, missing.join(", "))
     }
 }
 
@@ -42,8 +64,9 @@ mod tests {
     use super::*;
     use stage::StageKind;
     use std::cell::RefCell;
-    use std::fs;
+    use std::path::Path;
     use std::rc::Rc;
+    use tempfile::TempDir;
 
     struct MockStage {
         kind: StageKind,
@@ -69,6 +92,14 @@ mod tests {
             self.calls.borrow_mut().push(self.kind);
             Ok(())
         }
+    }
+
+    fn test_dir() -> TempDir {
+        tempfile::tempdir().unwrap()
+    }
+
+    fn path_string(path: &Path) -> String {
+        path.to_string_lossy().into_owned()
     }
 
     #[test]
@@ -105,41 +136,38 @@ mod tests {
     }
 
     #[test]
-    fn stage_is_skipped_when_outputs_are_fresh() {
-        let dir = "test-pipeline-skip";
-        let _ = fs::remove_dir_all(dir);
-        let _ = fs::remove_dir_all(".cache"); // clean up previous test runs
-        fs::create_dir_all(dir).unwrap();
-
-        let inp = format!("{}/input", dir);
-        let out = format!("{}/output", dir);
-
-        fs::write(&inp, "x").unwrap();
-        fs::write(&out, "x").unwrap();
-
-        // persist a manifest so needs_run returns false
-        let manifest_stage = MockStage {
-            kind: StageKind::Render,
-            requires: vec![inp.clone()],
-            produces: vec![out.clone()],
-            calls: Rc::new(RefCell::new(vec![])),
-        };
-        crate::pipeline::cache::save_manifest(&manifest_stage).unwrap();
-
+    fn missing_input_fails_before_running_stage() {
         let calls = Rc::new(RefCell::new(vec![]));
+        let dir = test_dir();
 
         let pipeline = Pipeline::from_stages(vec![Box::new(MockStage {
-            kind: StageKind::Render,
-            requires: vec![inp],
-            produces: vec![out],
+            kind: StageKind::Ingest,
+            requires: vec![path_string(&dir.path().join("missing-input"))],
+            produces: vec![],
             calls: calls.clone(),
         })]);
 
-        pipeline.run().unwrap();
+        let err = pipeline.run().unwrap_err();
 
+        assert!(err.to_string().contains("missing inputs"));
         assert!(calls.borrow().is_empty());
+    }
 
-        let _ = fs::remove_dir_all(".cache");
-        let _ = fs::remove_dir_all(dir);
+    #[test]
+    fn missing_output_fails_after_running_stage() {
+        let calls = Rc::new(RefCell::new(vec![]));
+        let dir = test_dir();
+
+        let pipeline = Pipeline::from_stages(vec![Box::new(MockStage {
+            kind: StageKind::Review,
+            requires: vec![],
+            produces: vec![path_string(&dir.path().join("missing-output"))],
+            calls: calls.clone(),
+        })]);
+
+        let err = pipeline.run().unwrap_err();
+
+        assert!(err.to_string().contains("missing outputs"));
+        assert_eq!(*calls.borrow(), vec![StageKind::Review]);
     }
 }

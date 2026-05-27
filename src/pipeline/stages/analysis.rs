@@ -22,6 +22,7 @@ impl Stage for Analysis {
 
     fn run(&self) -> anyhow::Result<()> {
         println!("  running segmentation, pose, depth extraction...");
+        super::create_output_dirs(&self.produces())?;
         Ok(())
     }
 }

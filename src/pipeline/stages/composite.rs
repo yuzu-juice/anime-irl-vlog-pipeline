@@ -17,6 +17,7 @@ impl Stage for Composite {
 
     fn run(&self) -> anyhow::Result<()> {
         println!("  compositing layers and exporting...");
+        super::create_output_dirs(&self.produces())?;
         Ok(())
     }
 }

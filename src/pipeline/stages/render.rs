@@ -17,6 +17,7 @@ impl Stage for Render {
 
     fn run(&self) -> anyhow::Result<()> {
         println!("  generating anime cel frames...");
+        super::create_output_dirs(&self.produces())?;
         Ok(())
     }
 }

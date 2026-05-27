@@ -17,6 +17,7 @@ impl Stage for Ingest {
 
     fn run(&self) -> anyhow::Result<()> {
         println!("  extracting frames from input video...");
+        super::create_output_dirs(&self.produces())?;
         Ok(())
     }
 }

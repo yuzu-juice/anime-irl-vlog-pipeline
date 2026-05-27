@@ -17,6 +17,7 @@ impl Stage for Motion {
 
     fn run(&self) -> anyhow::Result<()> {
         println!("  smoothing, foot locking, hold insertion...");
+        super::create_output_dirs(&self.produces())?;
         Ok(())
     }
 }

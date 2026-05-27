@@ -17,6 +17,7 @@ impl Stage for Review {
 
     fn run(&self) -> anyhow::Result<()> {
         println!("  human-in-the-loop review (skipped in automation)");
+        super::create_output_dirs(&self.produces())?;
         Ok(())
     }
 }
