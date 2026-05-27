@@ -28,6 +28,7 @@ impl Pipeline {
             if cache::needs_run(stage.as_ref()) {
                 println!("[run]  {:?}", stage.kind());
                 stage.run()?;
+                cache::save_manifest(stage.as_ref())?;
             } else {
                 println!("[skip] {:?}", stage.kind());
             }
@@ -43,8 +44,6 @@ mod tests {
     use std::cell::RefCell;
     use std::fs;
     use std::rc::Rc;
-    use std::thread;
-    use std::time::Duration;
 
     struct MockStage {
         kind: StageKind,
@@ -109,19 +108,28 @@ mod tests {
     fn stage_is_skipped_when_outputs_are_fresh() {
         let dir = "test-pipeline-skip";
         let _ = fs::remove_dir_all(dir);
+        let _ = fs::remove_dir_all(".cache"); // clean up previous test runs
         fs::create_dir_all(dir).unwrap();
 
         let inp = format!("{}/input", dir);
         let out = format!("{}/output", dir);
 
         fs::write(&inp, "x").unwrap();
-        thread::sleep(Duration::from_millis(10));
         fs::write(&out, "x").unwrap();
+
+        // persist a manifest so needs_run returns false
+        let manifest_stage = MockStage {
+            kind: StageKind::Render,
+            requires: vec![inp.clone()],
+            produces: vec![out.clone()],
+            calls: Rc::new(RefCell::new(vec![])),
+        };
+        crate::pipeline::cache::save_manifest(&manifest_stage).unwrap();
 
         let calls = Rc::new(RefCell::new(vec![]));
 
         let pipeline = Pipeline::from_stages(vec![Box::new(MockStage {
-            kind: StageKind::Ingest,
+            kind: StageKind::Render,
             requires: vec![inp],
             produces: vec![out],
             calls: calls.clone(),
@@ -131,6 +139,7 @@ mod tests {
 
         assert!(calls.borrow().is_empty());
 
+        let _ = fs::remove_dir_all(".cache");
         let _ = fs::remove_dir_all(dir);
     }
 }
